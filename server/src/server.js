@@ -143,8 +143,8 @@ app.get('/', (req, res) => {
   res.send('🚀 API de contactos con Google lista!');
 });
 
-app.get('/google4dc067070f5d623b.html', (req, res) => {
-  res.send('google-site-verification: google4dc067070f5d623b.html');
+app.get('/googlefb212c5dcd51aba6.html', (req, res) => {
+  res.send('google-site-verification: googlefb212c5dcd51aba6.html');
 });
 
 // Montar rutas
