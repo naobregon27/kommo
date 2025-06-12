@@ -9,7 +9,7 @@ function getOAuth2Client() {
   const credentials = {
     client_id: process.env.GOOGLE_CLIENT_ID,
     client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'https://kommo-p0ts.onrender.com/api/auth/google/callback'
+    redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback'
   };
 
   return new google.auth.OAuth2(
