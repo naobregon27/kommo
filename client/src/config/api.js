@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: 'https://crm-server-q3jg.onrender.com',  // Updated to use the full server URL
+  baseURL: 'https://kommo-p0ts.onrender.com',  // Updated to use the full server URL
   timeout: 30000,
   headers: {
     'Accept': 'application/json',
