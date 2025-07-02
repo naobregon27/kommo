@@ -18,7 +18,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  SnackbarContent
+  Pagination,
+  TextField
 } from '@mui/material';
 import {
   Send as SendIcon,
@@ -41,6 +42,9 @@ function Contacts() {
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const contactsPerPage = 40;
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -110,6 +114,45 @@ function Contacts() {
     event.target.value = '';
   };
 
+  // Filtrar contactos por nombre
+  const filteredItems = items.filter(contact =>
+    contact.name && contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Calcular índices para la paginación sobre los filtrados
+  const indexOfLastContact = currentPage * contactsPerPage;
+  const indexOfFirstContact = indexOfLastContact - contactsPerPage;
+  const currentContacts = filteredItems.slice(indexOfFirstContact, indexOfLastContact);
+  const totalPages = Math.ceil(filteredItems.length / contactsPerPage);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    window.scrollTo(0, 0);
+  };
+
+  const handleSelectAllInPage = (event) => {
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      // Seleccionar todos los contactos de la página actual que no estén ya seleccionados
+      currentContacts.forEach(contact => {
+        if (!selectedContactIds.includes(contact.id)) {
+          dispatch(selectContact(contact.id));
+        }
+      });
+    } else {
+      // Deseleccionar solo los contactos de la página actual
+      currentContacts.forEach(contact => {
+        if (selectedContactIds.includes(contact.id)) {
+          dispatch(selectContact(contact.id));
+        }
+      });
+    }
+  };
+
+  // Verificar si todos los contactos de la página actual están seleccionados
+  const areAllCurrentPageSelected = currentContacts.length > 0 && 
+    currentContacts.every(contact => selectedContactIds.includes(contact.id));
+
   return (
     <Box
       sx={{
@@ -161,10 +204,42 @@ function Contacts() {
       </Box>
 
       <Box mb={2}>
+        <TextField
+          label="Buscar contacto por nombre"
+          variant="outlined"
+          value={searchTerm}
+          onChange={e => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // Reiniciar a la primera página al buscar
+          }}
+          fullWidth
+          sx={{
+            mb: 2,
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: 1,
+            input: { color: '#e0e0ff' },
+            label: { color: '#e0e0ff' },
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': {
+                borderColor: '#e0e0ff',
+              },
+              '&:hover fieldset': {
+                borderColor: '#fff',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#fff',
+              },
+            },
+          }}
+          InputLabelProps={{ style: { color: '#e0e0ff' } }}
+        />
+      </Box>
+
+      <Box mb={2}>
         <Typography variant="subtitle1" color="textSecondary">
           {selectedContactIds.length > 0
-            ? `Contactos seleccionados (${selectedContactIds.length}/${items.length})`
-            : `Ningún contacto seleccionado (0/${items.length})`}
+            ? `Contactos seleccionados (${selectedContactIds.length}/${filteredItems.length})`
+            : `Ningún contacto seleccionado (0/${filteredItems.length})`}
         </Typography>
       </Box>
 
@@ -187,15 +262,30 @@ function Contacts() {
         </Alert>
       )}
 
-      {status === 'succeeded' && items.length === 0 && (
-        <Alert severity="info">
-          No se encontraron contactos. Si acabas de autenticarte, haz clic en "Actualizar Contactos".
-        </Alert>
+      {status === 'succeeded' && filteredItems.length === 0 && (
+        <Alert severity="info">No se encontraron contactos con ese nombre.</Alert>
       )}
 
-      {status === 'succeeded' && items.length > 0 && (
+      {status === 'succeeded' && filteredItems.length > 0 && (
+        <>
+          <Box display="flex" alignItems="center" mb={2}>
+            <Checkbox
+              checked={areAllCurrentPageSelected}
+              onChange={handleSelectAllInPage}
+              color="primary"
+              sx={{ 
+                color: '#e0e0ff',
+                '&.Mui-checked': {
+                  color: '#e0e0ff',
+                }
+              }}
+            />
+            <Typography>
+              Seleccionar todos los contactos de esta página
+            </Typography>
+          </Box>
         <Grid container spacing={3}>
-          {items.map((contact) => {
+            {currentContacts.map((contact) => {
             const isSelected = selectedContactIds.includes(contact.id);
             return (
               <Grid item xs={12} sm={6} md={4} key={contact.id}>
@@ -229,6 +319,24 @@ function Contacts() {
             );
           })}
         </Grid>
+          {totalPages > 1 && (
+            <Box display="flex" justifyContent="center" mt={4} mb={4}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                size="large"
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    color: '#e0e0ff',
+                    borderColor: '#e0e0ff',
+                  }
+                }}
+              />
+            </Box>
+          )}
+        </>
       )}
 
       <Box sx={{ position: 'fixed', bottom: 16, right: 16 }}>
