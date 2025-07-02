@@ -379,7 +379,7 @@ class GeneratorLeadsService {
                     results.processed++;
                     
                     // Esperar 1 segundo entre cada contacto para no sobrecargar la API
-                    await new Promise(resolve => setTimeout(resolve, 60000)); //milisegundos = 1 minuto
+                    await new Promise(resolve => setTimeout(resolve, 30000)); //milisegundos = 30 segundos
                 } catch (error) {
                     console.error(`❌ Error procesando contacto ${contact.name}:`, error.message);
                     results.contacts.push({
